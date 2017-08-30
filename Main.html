@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<style type="text/css">
+		.container{ 
+		 	position: relative;
+    		width: 620px;
+    		height: 450px;
+   	 		margin: 0 auto;
+    		margin-top: 100px;
+    		border-radius: 1px;
+
+		}
+		.main{
+			position: absolute;
+    		width: 450px;
+    		height: 450px;
+    		border-radius: 5px;
+    		display: inline-block;
+    		background-color: #ffe171;
+    		box-shadow: 0 0 10px #ffe171;
+		}
+		.main div{
+			position: absolute;
+		    width: 149px;
+		    height: 149px;
+		    box-shadow: 1px 1px 2px #777;
+		    background-color: #20a6fa;
+		    color: white;
+		    text-align: center;
+		    font-size: 150px;
+		    line-height: 150px;
+		    cursor: pointer;
+		
+		}
+		#div0{
+		
+    		display: none;
+		}
+
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div id="main_div" class="main">
+		
+		</div>
+		
+	</div>
+	<script type="text/javascript">
+		var dataArray=[
+			[1,2,3],
+			[4,5,6],
+			[7,8,0]
+		];
+		//随机生成的数组
+		var randomArr=[];
+		//随机显示的元素
+		function initArr() {
+			randomArr=[];
+			var tempArr=[];
+			for(var i=0;i<9;i++){
+				tempArr.push(i);
+			}
+			
+			while(tempArr.length){
+				var index=parseInt(Math.round(Math.random() * tempArr.length));
+				var item =tempArr[index];
+				if(typeof item != "undefined"){
+
+					randomArr.push(item);
+				}
+				tempArr.splice(index,1);
+			}
+			for (var i = 0; i<3 ; i++) {
+				dataArray[i]=[];
+				for(var index=i*3;index<i*3+3;index++){
+			
+					dataArray[i].push(randomArr[index]);
+				}
+			}
+		}
+		//根据元素显示div
+		function initDiv(){
+			var element=document.getElementById("main_div");
+			element.innerHTML='';
+			for (var i = 0; i < randomArr.length; i++) {
+				var mainDiv=document.createElement("div");
+				mainDiv.id="div"+randomArr[i];
+				mainDiv.className="move";
+				mainDiv.style.left= (i%3*150) +"px";
+				mainDiv.style.top= (Math.floor(i/3) *150)+"px";
+				mainDiv.setAttribute("x",Math.floor(i/3) );
+				mainDiv.setAttribute("y", i%3);
+				var node=document.createTextNode((randomArr[i] ||""));
+				mainDiv.appendChild(node);
+				element.appendChild(mainDiv);
+			}
+			
+		}
+		//绑定元素点击事件
+	 	function initClick(){
+	 		for(var i=1;i<=8;i++){
+	 			document.getElementById("div"+i).addEventListener("click",function(){
+	 			
+	 				var position ={
+	 					"x":parseInt(this.getAttribute("x")),
+	 					"y":parseInt(this.getAttribute("y"))
+	 				};
+	 				CheckAndMove(position,this);
+					
+	 			})
+	 		}
+
+	 	}
+	 	//判断点击的元素能否移动
+	 	function CheckAndMove(position,clickObj){
+	 	
+	 		//判断“0”这个元素的坐标是否在点击元素的上下左右 
+		 	var div_empty=document.getElementById("div0");
+	 		var empty_position={
+	 			"x":parseInt(div_empty.getAttribute("x")) ,
+	 			"y":parseInt(div_empty.getAttribute("y")) 
+	 		};
+	 		var direction="";
+	 		if(position.y == empty_position.y){
+	 			//y坐标一样，比较x坐标
+	 			if(position.x - empty_position.x ==1){//向上移动
+	 				var topPos=parseFloat(clickObj.style.top.replace("px",""));
+					var index=1;
+					var up=setInterval(function(){
+						clickObj.style.top = (topPos  - index )+"px";
+	 					index++;
+	 					if(index==150){
+	 						clearInterval(up);
+	 					}
+					},100)
+	 			
+	 				
+	 				direction= "up";
+	 			}
+	 			if(position.x - empty_position.x ==-1){//向下移动
+	 				clickObj.style.top = (parseFloat(clickObj.style.top.replace("px",""))  + 150 )+"px";
+	 				direction= "down";
+	 			}
+	 		}
+	 		if(position.x ==empty_position.x){//x坐标一样，比较y坐标
+	 			if(position.y - empty_position.y ==1){//向左移动
+	 				clickObj.style.left = (parseFloat(clickObj.style.left.replace("px",""))  - 150 )+"px";
+	 				direction= "left";
+	 			}
+	 			if(position.y - empty_position.y ==-1){//向右移动
+	 				clickObj.style.left = (parseFloat(clickObj.style.left.replace("px",""))  + 150 )+"px";
+	 				direction="right";
+	 			}
+	 		}
+	 		if(direction){
+	 			//替换点击的元素坐标和0元素的坐标
+	 			div_empty.setAttribute("x",position.x);
+	 			div_empty.setAttribute("y",position.y);
+	 			clickObj.setAttribute("x",empty_position.x);
+	 			clickObj.setAttribute("y",empty_position.y);	
+	 			if(checkIsWin()){
+	 				alert("恭喜你，完成游戏!");
+	 			}
+	 		}
+	 	
+	 	}
+	 	//检查是否胜利
+	 	function CheckIsWin(){
+	 		//当元素值为1，且坐标为0,0；元素值为2，坐标为0,1；元素值为3，坐标为0,2
+	 		//当元素值为4，且坐标为1,0；元素值为5，坐标为1,1；元素值为6，坐标为1,2
+	 		//当元素值为7，且坐标为2,0；元素值为8，坐标为2,1；元素值为0，坐标为2,2
+	 		//元素的值 =坐标X*3+坐标y+1
+	 		var IsWin=true;
+	 		var div=document.getElementsByClassName("move");
+	 		for (var i = 0; i <div.length; i++) {
+	 			var x=parseInt(div[i].getAttribute("x"));
+	 			var y=parseInt(div[i].getAttribute("y"));
+	 			//去除id中的div,值为0的，应在9的位置上
+	 			var index= parseInt(div[i].id.replace("div",""))||9;
+	 			
+	 			if(x*3+y+1!=index){
+	 				IsWin=false;
+	 				break;
+	 			}
+	 		}
+	 		return IsWin;
+	 	}
+		//判断键盘按键
+		function checkKeyUp(){
+			document.onkeydown=function(event){
+					var div_empty=document.getElementById("div0");
+			 		var empty_position={
+			 			"x":parseInt(div_empty.getAttribute("x")) ,
+			 			"y":parseInt(div_empty.getAttribute("y")) 
+			 		};
+				  	var e = event || window.event;
+				  		console.log(e);
+				  	var needMove=false; 
+				  	if(e.keyCode==87 || e.keyCode==38){
+				  	//w --向上
+				  		empty_position.x++;
+				  		needMove=true;
+				  	}
+				  	if(e.keyCode==83 || e.keyCode==40){
+				  	//s--向下
+				  		empty_position.x--;
+				  		needMove=true;
+				  	}
+				  	if(e.keyCode==68 || e.keyCode==39){
+				  	//d--向右
+				  		needMove=true;
+				  		empty_position.y--;
+				  	}
+				  	if(e.keyCode==65 || e.keyCode==37){
+				  	//a--向左
+				  		needMove=true;
+				  		empty_position.y++;
+				  	}
+				 	if(needMove){
+				 		var clickXArray=document.querySelectorAll("[x='"+empty_position.x+"']");
+					  	var clickObj;
+					  	for(var i=0;i<clickXArray.length;i++){
+					  		if(parseInt(clickXArray[i].getAttribute("y")) ==empty_position.y){
+					  			clickObj=clickXArray[i];
+					  			break;
+					  		}
+					  	}
+				 		CheckAndMove(empty_position,clickObj);
+				 	}
+				  
+			}
+		}
+
+		//随机显示的元素
+		initArr();
+		//根据元素显示div
+		initDiv();
+		//绑定元素点击事件
+		initClick();
+		//检查是否胜利
+		checkIsWin();
+		//判断键盘按键
+		checkKeyUp();
+	</script>
+</body>
+</html>
